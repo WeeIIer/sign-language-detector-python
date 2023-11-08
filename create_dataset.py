@@ -4,6 +4,7 @@ import pickle
 import mediapipe as mp
 import cv2
 import matplotlib.pyplot as plt
+import time
 
 
 mp_hands = mp.solutions.hands
@@ -14,9 +15,12 @@ hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
 
 DATA_DIR = './data'
 
+start = time.time()
+print("Создание набора данных началось:", end=" ")
+
 data = []
 labels = []
-for dir_ in os.listdir(DATA_DIR):
+for dir_ in sorted(os.listdir(DATA_DIR), key=int):
     for img_path in os.listdir(os.path.join(DATA_DIR, dir_)):
         data_aux = []
 
@@ -42,8 +46,14 @@ for dir_ in os.listdir(DATA_DIR):
                     data_aux.append(x - min(x_))
                     data_aux.append(y - min(y_))
 
-            data.append(data_aux)
-            labels.append(dir_)
+            if len(data_aux) == 42:
+                data.append(data_aux)
+                labels.append(dir_)
+
+    print(f'Класс "{dir_}" обработан.')
+
+stop = time.time()
+print(f"Набор данных создан. Затрачено времени: {stop - start} сек.")
 
 f = open('data.pickle', 'wb')
 pickle.dump({'data': data, 'labels': labels}, f)
